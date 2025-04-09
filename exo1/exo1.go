@@ -4,58 +4,59 @@ import (
 	"flag"
 	"fmt"
 	"runtime"
+	"sync"
 	"time"
 )
 
-func sommer(tabint []int, channel chan int) {
+func sommer(tab []int, ch chan int, wg *sync.WaitGroup) {
+	defer wg.Done()
 	somme := 0
-	for _, valeur := range tabint {
-		somme += valeur
+	for _, v := range tab {
+		somme += v
 	}
-	channel <- somme
+	ch <- somme
 }
 
 func main() {
 	start := time.Now()
-	p_num := flag.Int("n", 10, "nombre")
+
+	p_num := flag.Int("n", 10, "taille du tableau")
 	flag.Parse()
 
-	tabnum := make([]int, *p_num+1)
+	tab := make([]int, *p_num+1)
 	for i := 0; i <= *p_num; i++ {
-		tabnum[i] = i
+		tab[i] = i
 	}
 
-	//fmt.Println("Dans main(), tabnum =", tabnum)
+	nbCPU := runtime.NumCPU()
+	taille := len(tab) / nbCPU
+	if taille == 0 {
+		taille = 1
+	}
 
-	//En utilisant le parallélisme de donnée
+	ch := make(chan int)
+	var wg sync.WaitGroup
 
-	channel_result := make(chan int)
-	nbcpu := runtime.NumCPU()
-	taille := len(tabnum) / nbcpu
-
-	nbGoroutines := 0
-	for i := 0; i < len(tabnum); i += taille {
+	for i := 0; i < len(tab); i += taille {
 		fin := i + taille
-		if fin > len(tabnum) {
-			fin = len(tabnum)
+		if fin > len(tab) {
+			fin = len(tab)
 		}
-		go sommer(tabnum[i:fin], channel_result)
-		nbGoroutines++
+		wg.Add(1)
+		go sommer(tab[i:fin], ch, &wg)
 	}
+
+	// Ferme le canal quand toutes les goroutines ont fini
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
 
 	sommeTotale := 0
-	for i := 0; i < nbGoroutines; i++ {
-		sommePartielle := <-channel_result
-		sommeTotale += sommePartielle
+	for somme := range ch {
+		sommeTotale += somme
 	}
 
-	//Sans utiliser le parallélisme de donnée
-	//sommeTotale := 0
-	//for _, valeur := range tabnum {
-	//	sommeTotale += valeur
-	//}
-
 	fmt.Println("Somme totale :", sommeTotale)
-	duration := time.Since(start)
-	fmt.Println("Temps d'exécution :", duration)
+	fmt.Println("Temps d'exécution :", time.Since(start))
 }
