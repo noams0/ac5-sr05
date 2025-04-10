@@ -12,7 +12,7 @@ Ce programme Go calcule la somme des éléments d’un tableau d'entiers, en exp
    ```bash
    go run main.go -n 1000000
    ```
-   L’option `-n` détermine jusqu’à quel entier le tableau va compter (ex : de 0 à 1_000_000).
+   L’option `-n` détermine jusqu’à quel entier le tableau va compter.
 
 2. **Initialisation du tableau** :
    ```go
@@ -27,7 +27,7 @@ Ce programme Go calcule la somme des éléments d’un tableau d'entiers, en exp
    nbCPU := runtime.NumCPU()
    taille := len(tab) / nbCPU
    if taille == 0 {
-       taille = 1 // pour éviter les divisions nulles si le tableau est petit
+       taille = 1 // pour éviter que ça bloque si tableau petit
    }
    ```
 
@@ -45,7 +45,7 @@ Ce programme Go calcule la somme des éléments d’un tableau d'entiers, en exp
    ```
 
 5. **Récupération des résultats** :
-   Une fois toutes les goroutines terminées, le canal est fermé, ce qui permet de le parcourir avec `range` de manière idiomatique :
+   Une fois toutes les goroutines terminées, le canal est fermé, ce qui permet de le parcourir avec `range`:
    ```go
    go func() {
        wg.Wait()
@@ -77,8 +77,8 @@ Temps d'exécution : 3.14ms
 
 ### Liens avec le parallélisme de données
 
-Ce programme est un exemple simple mais parlant du **parallélisme de données** : une même opération (la somme) est appliquée à des **données découpées** (les tranches du tableau) **en parallèle**. Chaque cœur disponible peut exécuter une goroutine, ce qui permet d’accélérer le traitement pour de grands tableaux.
-Le code prend aussi en compte des cas où le tableau est trop petit pour être divisé entre tous les cœurs, en forçant une taille minimale de tranche.
+Ce programme est un exemple simple mais parlant du **parallélisme de données** : une même opération (la somme) est appliquée à des **données découpées** (les tranches du tableau) **en parallèle**. Chaque cpu disponible peut exécuter une goroutine, ce qui permet d’accélérer le traitement pour de grands tableaux.
+
 
 
 ### Pour aller plus loin

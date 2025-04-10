@@ -78,14 +78,6 @@ Ce programme illustre un **parallélisme de pipeline**, où chaque unité de tra
 
 - Le programme ne stocke pas tous les entiers en mémoire : les données circulent dans un **pipeline**.
 - Le nombre de goroutines dépend du nombre de premiers trouvés (et donc de `n`).
-- Le `select` avec `time.After` permet d’éviter les deadlocks si quelque chose se passe mal dans la chaîne.
-
-
-### Pour tester
-
-```bash
-go run main.go -n 100
-```
 
 Pour observer le comportement du pipeline, laisser les `fmt.Println()` dans `filtre()` ; pour plus de performance, les commenter.
 
